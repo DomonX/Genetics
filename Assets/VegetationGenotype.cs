@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using Sim;
+
 public class VegetationGenotype : MonoBehaviour
 {
 
@@ -10,6 +12,8 @@ public class VegetationGenotype : MonoBehaviour
     public float zAllele;
 
     public GameObject template;
+
+    public Color color;
 
     void Start()
     {
@@ -24,16 +28,17 @@ public class VegetationGenotype : MonoBehaviour
     public void ResetColor()
     {
         Renderer r = GetComponent<Renderer>();
-        r.material.SetColor("_Color", new Color(xAllele, yAllele, zAllele));
+        this.color = new Color(xAllele, yAllele, zAllele);
+        r.material.SetColor("_Color", this.color);
     }
 
-    public GameObject CreateChild(float mutationChance)
+    public GameObject CreateChild(VegetationGenotype parent)
     {
         GameObject child = GameObject.Instantiate(template);
-        VegetationGenotype childGenotype = GetComponent<VegetationGenotype>();
-        childGenotype.xAllele = Mutate(xAllele, mutationChance);
-        childGenotype.yAllele = Mutate(yAllele, mutationChance);
-        childGenotype.zAllele = Mutate(zAllele, mutationChance);
+        VegetationGenotype childGenotype = child.GetComponent<VegetationGenotype>();
+        childGenotype.xAllele = Mutate((xAllele + parent.xAllele) / 2, 0.001f);
+        childGenotype.yAllele = Mutate((yAllele + parent.yAllele) / 2, 0.001f);
+        childGenotype.zAllele = Mutate((zAllele + parent.zAllele) / 2, 0.001f);
         childGenotype.ResetColor();
         return child;
     }
@@ -50,7 +55,7 @@ public class VegetationGenotype : MonoBehaviour
     {
         if(Random.Range(0.0f, 1.0f) < chance)
         {
-            return Random.Range(-0.01f, 0.01f) + gene;
+            return Random.Range(-0.1f, 0.1f) + gene;
         }
         return gene;
     }

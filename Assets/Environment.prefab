@@ -109,10 +109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentColor: {r: 0, g: 0, b: 0, a: 0}
-  changeInterval: 100
-  currentInterval: 0
-  vegs: 0
-  MaxVegs: 10
+  MaxVegs: 20
 --- !u!208 &-8140163064169902646
 NavMeshObstacle:
   m_ObjectHideFlags: 0

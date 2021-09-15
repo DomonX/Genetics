@@ -107,15 +107,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed75c69d9f44d4244acb45b2adcb0593, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GrowthSpeed: 1
-  DecaySpeed: 1
-  ReproductionAge: 0.7
-  ReproductionSpeed: 1
   MutationChance: 0.1
-  Lifetime: 10
-  IsDecaying: 0
+  EnvironmentColor: {r: 0, g: 0, b: 0, a: 0}
   Genotype: {fileID: 395847087263331093}
-  ReproductionCounter: 0
+  Compatibiliy: 0
+  MaxSize: 1
+  FoodStorage: 0
+  Lifespan: -2
+  MaxLifespan: 4
+  Strength: 0
 --- !u!114 &395847087263331093
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -132,3 +132,4 @@ MonoBehaviour:
   yAllele: 0
   zAllele: 0
   template: {fileID: 395847087263331091}
+  color: {r: 0, g: 0, b: 0, a: 0}

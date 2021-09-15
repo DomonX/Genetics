@@ -1,32 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Sim;
 
-public class WorldGenerator : MonoBehaviour
+public class SimController : MonoBehaviour
 {
-
-    // Start is called before the first frame update
 
     public GameObject EnvironmentObject;
     public GameObject VegetationObject;
-    public GameObject AnimalObject;
 
     public int xSize = 1;
     public int zSize = 1;
     public int Vegetations = 1;
-    public int Animals = 1;
 
     private List<GameObject> EnvironmentObjects = new List<GameObject>();
     private List<GameObject> VegetationObjects = new List<GameObject>();
-    private List<GameObject> AnimalObjects = new List<GameObject>();
 
     private float xWorldSize;
     private float zWorldSize;
-
-    void Start()
-    {
-        
-    }
 
     public void GenerateEnvironment()
     {
@@ -52,6 +43,7 @@ public class WorldGenerator : MonoBehaviour
     {
         for(int i = 0; i < Vegetations; i++)
         {
+            Debug.Log("veg");
             float xPos = Random.Range(0.0f, xWorldSize);
             float zPos = Random.Range(0.0f, zWorldSize);
             GameObject clone = GameObject.Instantiate(VegetationObject, new Vector3(xPos, 1.0f, zPos), new Quaternion());
@@ -61,20 +53,20 @@ public class WorldGenerator : MonoBehaviour
         }
     }
 
-    public void GenerateAnimals()
+
+    public void SetSpeed(float speed)
     {
-        for (int i = 0; i < Vegetations; i++)
-        {
-            float xPos = Random.Range(0.0f, xWorldSize);
-            float zPos = Random.Range(0.0f, zWorldSize);
-            GameObject clone = GameObject.Instantiate(AnimalObject, new Vector3(xPos, 1.0f, zPos), new Quaternion());
-            AnimalObjects.Add(clone);
-        }
+        Simc.SimSpeed = speed;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetCompatibilityPower(float power)
     {
-        
+        Simc.CompatibilityPower = power;
     }
+
+    public void SetMutationChance(float chance)
+    {
+        Simc.MutationChance = chance;
+    }
+
 }

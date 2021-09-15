@@ -1,33 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Sim;
 
 using System;
 
 public class VegetationController : MonoBehaviour
 {
-    public float GrowthSpeed = 1.0f;
-    public float DecaySpeed = 1.0f;
-    public float ReproductionAge = 0.7f;
-    public float ReproductionSpeed = 1.0f;
-    public float MutationChance = 0.01f;
-
-    public float Lifetime = 1.0f;
-
-    public bool IsDecaying = false;
     public float CurrentSize { get; private set; } = 0.0f;
-
+    public Color EnvironmentColor;
     public VegetationGenotype Genotype;
+    public float Compatibiliy;
+    public float MaxSize = 1.0f;
+    public float FoodStorage = 0.0f;
+    public float Lifespan = -4.0f;
+    public float MaxLifespan = 4.0f;
+    public float Strength = 0.0f;
+    public bool IsGrown = false;
 
-    public float ReproductionCounter = 0.0f;
-
-    private float CurrentLifetime = 0.0f;
-
-    private EnvironmentController environment;
-
+    private EnvironmentController Environment;
     void Start()
     {
-        ReproductionCounter = 0.0f;
+        IsGrown = false;
+        FoodStorage = 0.0f;
+        CurrentSize = 0.1f;
+        Lifespan = -4.0f;
         RaycastHit hit;
         Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 10.0f, 1 << 8);
         if(!hit.collider)
@@ -35,112 +32,109 @@ public class VegetationController : MonoBehaviour
             Destroy(this.gameObject);
             return;
         }
-        environment = hit.collider.gameObject.GetComponent<EnvironmentController>();
-        if(!environment.RegisterVegetation(this.gameObject))
-        {
-           Destroy(this.gameObject);
-           return;
-        }
-       
+        Environment = hit.collider.gameObject.GetComponent<EnvironmentController>();
+        Environment.RegisterVegetation(gameObject);
+        EnvironmentColor = Environment.currentColor;       
         SetSize();
     }
 
     void Update()
     {
-        CurrentLifetime += Time.deltaTime;
-        if(IsDecaying) {
-            Decay();
-        } else {
-            Grow();
-        }
-        CheckDecay();
-        Reproduce();
-        SetSize();
-    }
-
-    private void Reproduce()
-    {
-        if(!CanReproduce())
+        Lifespan += Simc.DeltaTime;
+        float foodChange = GetCurrentFood();
+        if(!IsGrown)
         {
-            return;
+            Grow(foodChange);
+        } else
+        {
+            Store(foodChange);
         }
-        ReproductionCounter += Time.deltaTime;
-
-        if(IsReproductionReady())
+        
+        SetSize();
+        if (ShouldDie())
+        {
+            Die();
+        }
+        if(ShouldReproduce())
         {
             CreateChild();
-            DecreaseReproductionCounter();
         }
+
+    }
+
+    private void Store(float amount)
+    {
+        FoodStorage += amount;
+        if(FoodStorage < 0)
+        {
+            CurrentSize += FoodStorage;
+            FoodStorage = 0.0f;
+        }
+    }
+
+    private void Grow(float amount)
+    {
+        CurrentSize += amount;
+        if (CurrentSize > MaxSize)
+        {
+            IsGrown = true;
+            FoodStorage += CurrentSize - MaxSize;
+            CurrentSize = MaxSize;
+        }
+    }
+
+    private bool ShouldReproduce()
+    {
+        return FoodStorage >= 1.0f;
     }
 
     private void CreateChild()
-    {
+    {        
+        Collider[] c = Physics.OverlapSphere(this.transform.position, 5.0f, 1 << 9);
+        VegetationGenotype genes = c.Length == 0 ? Genotype : c[new System.Random().Next(c.Length - 1)].GetComponent<VegetationGenotype>();
         Vector3 shift = new Vector3(UnityEngine.Random.Range(-2.0f, 2.0f), 0.0f, UnityEngine.Random.Range(-2.0f, 2.0f));
-        GameObject child = Genotype.CreateChild(MutationChance);
+        GameObject child = Genotype.CreateChild(genes);
         child.transform.localPosition = child.transform.localPosition + shift;
+        FoodStorage -= 1.0f;
     }
 
-    private bool IsReproductionReady()
-    {
-        return ReproductionCounter >= ReproductionSpeed;
-    }
-
-    private void DecreaseReproductionCounter()
-    {
-        ReproductionCounter -= ReproductionSpeed;
-    }
-
-    private bool CanReproduce()
-    {
-        return !IsDecaying && CurrentSize > ReproductionAge;
-    }
-
-    private float GetGrowth()
-    {
-        return GrowthSpeed * Time.deltaTime / Lifetime;
-    }
-
-    private float GetDecay()
-    {
-        return DecaySpeed * Time.deltaTime / Lifetime;
-    }
-
-    private void Grow()
-    {
-        CurrentSize += GetGrowth();
-    }
-
-    private void Decay()
-    {
-        CurrentSize -= GetDecay();
-        if(IsDead())
-        {
-            
-            environment.UnregisterVegetation(this.gameObject);
-            Destroy(this.gameObject);
-        }
-    }
-
-    private void CheckDecay()
-    {
-        if(IsDecaying)
-        {
-            return;
-        }
-        if(CurrentLifetime >= Lifetime)
-        {
-            IsDecaying = true;
-        }
-    }
-
-    private bool IsDead()
+    private bool ShouldDie()
     {
         return CurrentSize <= 0.0f;
+    }
+
+    private void Die()
+    {       
+        Environment.UnregisterVegetation(this.gameObject);
+        Destroy(this.gameObject);
     }
 
     private void SetSize()
     {
         transform.localScale = new Vector3(CurrentSize, CurrentSize, CurrentSize);
         transform.localPosition = new Vector3(transform.localPosition.x, CurrentSize / 2, transform.localPosition.z);
+    }
+
+    private float GetCurrentFood()
+    {        
+
+        return ((Environment.CurrentFood() * GetColorCompatibility() * GetStrength()) - 1.0f) * Simc.DeltaTime;
+    }
+
+    private float GetStrength()
+    {
+        this.Strength = (MaxLifespan - Lifespan )/ MaxLifespan;
+        return MaxLifespan - Lifespan / MaxLifespan;
+    }
+
+    private float GetColorCompatibility()
+    {
+        float rComp = 1.0f - Math.Abs(Genotype.color.r - Environment.currentColor.r);
+        float gComp = 1.0f - Math.Abs(Genotype.color.g - Environment.currentColor.g);
+        float bComp = 1.0f - Math.Abs(Genotype.color.b - Environment.currentColor.b);
+        float comp = rComp * gComp * bComp;
+        Compatibiliy = comp;
+        return (float)Math.Pow(comp, 3.0f);
+        // return (float)Math.Pow(comp, Simc.CompatibilityPower);
     }
 }
