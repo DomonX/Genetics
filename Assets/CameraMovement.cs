@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CameraMovement : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class CameraMovement : MonoBehaviour
     public float x;
     public float y;
     public float z;
-    // Start is called before the first frame update
+
     void Start()
     {
         tr = GetComponent<Transform>();
@@ -25,15 +26,6 @@ public class CameraMovement : MonoBehaviour
         Vector3 move = new Vector3(x, y, z);
 
         tr.position += move;
-
-        if(Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            Physics.Raycast(ray, out hit, 25.0f, 1 << 9);
-            GameObject entity = hit.collider.gameObject;
-            VegetationController veg = entity.GetComponent<VegetationController>();
-        }
-
     }
+
 }

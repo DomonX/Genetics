@@ -36,6 +36,8 @@ public class VegetationController : MonoBehaviour
         Environment.RegisterVegetation(gameObject);
         EnvironmentColor = Environment.currentColor;       
         SetSize();
+        gameObject.name = "Vegetation " + Simc.VegetationIndex;
+        Simc.VegetationIndex++;
     }
 
     void Update()
@@ -129,12 +131,19 @@ public class VegetationController : MonoBehaviour
 
     private float GetColorCompatibility()
     {
+        
         float rComp = 1.0f - Math.Abs(Genotype.color.r - Environment.currentColor.r);
         float gComp = 1.0f - Math.Abs(Genotype.color.g - Environment.currentColor.g);
         float bComp = 1.0f - Math.Abs(Genotype.color.b - Environment.currentColor.b);
         float comp = rComp * gComp * bComp;
         Compatibiliy = comp;
-        return (float)Math.Pow(comp, 3.0f);
-        // return (float)Math.Pow(comp, Simc.CompatibilityPower);
+        
+
+        float rDiff = Math.Abs(Genotype.color.r - Environment.currentColor.r) / 3;
+        float gDiff = Math.Abs(Genotype.color.g - Environment.currentColor.g) / 3;
+        float bDiff = Math.Abs(Genotype.color.b - Environment.currentColor.b) / 3;
+        float diff = rDiff + gDiff + bDiff;
+        Compatibiliy = 1.0f - diff;
+        return (float)Math.Pow(Compatibiliy, Simc.CompatibilityPower);
     }
 }

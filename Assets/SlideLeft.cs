@@ -59,10 +59,4 @@ public class SlideLeft : MonoBehaviour
         float x = State ? DesiredX : BaseX;
         rect.anchoredPosition = new Vector2(x, 0.0f);
     }
-
- 
-
-
-
-
 }

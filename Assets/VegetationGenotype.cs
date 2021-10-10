@@ -53,7 +53,7 @@ public class VegetationGenotype : MonoBehaviour
 
     private float Mutate(float gene, float chance)
     {
-        if(Random.Range(0.0f, 1.0f) < chance)
+        if(Random.Range(0.0f, 1.0f) < Simc.MutationChance)
         {
             return Random.Range(-0.1f, 0.1f) + gene;
         }

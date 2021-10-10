@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class EnvironmentController : MonoBehaviour
@@ -34,6 +34,15 @@ public class EnvironmentController : MonoBehaviour
             return MaxVegs;
         }
         return MaxVegs / vegetation.Count;
+    }
+
+    public float GetAvarageCompatibility()
+    {
+        if(vegetation.Count == 0)
+        {
+            return 0.0f;
+        }
+        return vegetation.Select(i => i.GetComponent<VegetationController>().Compatibiliy).Aggregate(0.0f, (float acc, float curr) => acc + curr) / vegetation.Count;
     }
 
     private void SetColor()
