@@ -94,6 +94,10 @@ public class VegetationController : MonoBehaviour
     private void CreateChild()
     {        
         Collider[] c = Physics.OverlapSphere(this.transform.position, 5.0f, 1 << 9);
+        if(c.Length == 0)
+        {
+            Debug.Log("No partner");
+        }
         VegetationGenotype genes = c.Length == 0 ? Genotype : c[new System.Random().Next(c.Length - 1)].GetComponent<VegetationGenotype>();
         Vector3 shift = new Vector3(UnityEngine.Random.Range(-2.0f, 2.0f), 0.0f, UnityEngine.Random.Range(-2.0f, 2.0f));
         GameObject child = Genotype.CreateChild(genes);
@@ -121,7 +125,8 @@ public class VegetationController : MonoBehaviour
     private float GetCurrentFood()
     {
         float food = Environment.CurrentFood();
-        float compatibility = Mathf.Pow(Compatibiliy, Simc.CompatibilityPower);
+        // float compatibility = Mathf.Pow(Compatibiliy, Simc.CompatibilityPower);
+        float compatibility = 1.0f - (float)Math.Pow((1 - Compatibiliy), 1 / Simc.CompatibilityPower);
         float strength = GetStrength();
         return (food * compatibility * strength - 1.0f) * Simc.DeltaTime;
     }

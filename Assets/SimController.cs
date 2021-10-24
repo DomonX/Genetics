@@ -1,7 +1,11 @@
 ﻿using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using Sim;
+
+using System.IO;
+using System.Threading.Tasks;
 
 public class SimController : MonoBehaviour
 {
@@ -12,18 +16,66 @@ public class SimController : MonoBehaviour
     private List<GameObject> EnvironmentObjects = new List<GameObject>();
     private List<GameObject> VegetationObjects = new List<GameObject>();
 
+    private List<EnvironmentController> Controllers = new List<EnvironmentController>();
+
     private float worldSize;
+
+    private bool started;
+
+    private List<string> reports = new List<string>();
+
+    private float reportTime = 0.0f;
 
     public void Update()
     {
-        if(EnvironmentObjects.Count > 0)
+        if(started)
         {
-            Debug.Log('Started');
+            reportTime += Simc.DeltaTime;
+            if(reportTime > 1.0f)
+            {
+                AddToReport();
+                reportTime -= 1.0f;
+            }
+            return;
         }
+        if(EnvironmentObjects.Count > 0 && VegetationObjects.Count > 0)
+        {
+            this.started = true;
+        }
+    }
+
+    private void AddToReport()
+    {
+        string report = Controllers.Select(i =>
+        {
+            return
+                i.currentColor.r.ToString() + ',' +
+                i.currentColor.g.ToString() + ',' +
+                i.currentColor.b.ToString() + ',' +
+                i.GetAvarageCompatibility().ToString() + ',' +
+                i.GetAvarageRed().ToString() + ',' +
+                i.GetAvarageGreen().ToString() + ',' +
+                i.GetAvarageBlue().ToString() + ';';
+        }).Aggregate("", (string acc, string curr) => acc + curr);
+
+        reports.Add(report);
+    }
+
+    public void SaveReport()
+    {
+        File.WriteAllLines("report.csv", reports);
     }
 
     public void GenerateEnvironment()
     {
+        EnvironmentObjects.ForEach(i => {
+            Destroy(i);
+        });
+
+        VegetationObjects.ForEach(i => {
+            Destroy(i);
+        });
+
         float xEnvScale = EnvironmentObject.transform.localScale.x * 10.0f;
         float zEnvScale = EnvironmentObject.transform.localScale.z * 10.0f;
         for (int x = 0; x < Simc.EnvironmentSize; x++)
@@ -35,6 +87,8 @@ public class SimController : MonoBehaviour
                 EnvironmentObjects.Add(clone);
             }
         }
+
+        Controllers = EnvironmentObjects.Select(i => i.GetComponent<EnvironmentController>()).ToList();
 
         worldSize = (Simc.EnvironmentSize - 0.5f) * xEnvScale;
 

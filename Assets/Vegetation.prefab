@@ -71,13 +71,12 @@ MonoBehaviour:
   EnvironmentColor: {r: 0, g: 0, b: 0, a: 0}
   Genotype: {fileID: 395847087263331093}
   Compatibiliy: 0
-  MaxSize: 1
+  MaxSize: 2
   FoodStorage: 0
-  Lifespan: -4
+  Lifespan: 0
   MaxLifespan: 4
   Strength: 0
   IsGrown: 0
-  foodChange: 0
 --- !u!114 &395847087263331093
 MonoBehaviour:
   m_ObjectHideFlags: 0
