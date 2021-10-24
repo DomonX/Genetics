@@ -14,6 +14,14 @@ public class SimController : MonoBehaviour
 
     private float worldSize;
 
+    public void Update()
+    {
+        if(EnvironmentObjects.Count > 0)
+        {
+            Debug.Log('Started');
+        }
+    }
+
     public void GenerateEnvironment()
     {
         float xEnvScale = EnvironmentObject.transform.localScale.x * 10.0f;
@@ -28,7 +36,10 @@ public class SimController : MonoBehaviour
             }
         }
 
-        worldSize = (Simc.EnvironmentSize - 0.5f) * xEnvScale;             
+        worldSize = (Simc.EnvironmentSize - 0.5f) * xEnvScale;
+
+        Simc.worldX = new Vector2(0.0f, EnvironmentObject.transform.localScale.x * 10.0f * Simc.EnvironmentSize) - new Vector2(EnvironmentObject.transform.localScale.x / 2, EnvironmentObject.transform.localScale.x / 2);
+        Simc.worldY = new Vector2(0.0f, EnvironmentObject.transform.localScale.y * 10.0f * Simc.EnvironmentSize) - new Vector2(EnvironmentObject.transform.localScale.x / 2, EnvironmentObject.transform.localScale.x / 2);
     }
 
     public void GenerateVegetation()
@@ -37,7 +48,7 @@ public class SimController : MonoBehaviour
         {
             float xPos = Random.Range(0.0f, worldSize);
             float zPos = Random.Range(0.0f, worldSize);
-            GameObject clone = GameObject.Instantiate(VegetationObject, new Vector3(xPos, 1.0f, zPos), new Quaternion());
+            GameObject clone = GameObject.Instantiate(VegetationObject, new Vector3(xPos, 0.0f, zPos), new Quaternion());
             VegetationGenotype gene = clone.GetComponent<VegetationGenotype>();
             gene.Randomize();
             VegetationObjects.Add(clone);

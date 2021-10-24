@@ -15,10 +15,11 @@ public class InformationPanel : MonoBehaviour
     public GameObject envBlue;
     public GameObject envComp;
 
-    void Start()
-    {
-        
-    }
+    public GameObject vegAvgRed;
+    public GameObject vegAvgGreen;
+    public GameObject vegAvgBlue;
+
+    void Start() {}
 
     void Update()
     {
@@ -36,10 +37,18 @@ public class InformationPanel : MonoBehaviour
     public void SetEnvironment(EnvironmentController env)
     {
         this.env = env;
-        envRed.GetComponent<TMPro.TextMeshProUGUI>().text = "Red: " + env.currentColor.r;
-        envGreen.GetComponent<TMPro.TextMeshProUGUI>().text = "Green: " + env.currentColor.g;
-        envBlue.GetComponent<TMPro.TextMeshProUGUI>().text = "Blue: " + env.currentColor.b;
-        envComp.GetComponent<TMPro.TextMeshProUGUI>().text = "Avarage Compatiblity: " + env.GetAvarageCompatibility();
+        SetText(envRed, "Red: " + env.currentColor.r);
+        SetText(envGreen, "Green: " + env.currentColor.g);
+        SetText(envBlue, "Blue: " + env.currentColor.b);
+        SetText(envComp, "Avarage Compatiblity: " + env.GetAvarageCompatibility());
+        SetText(vegAvgRed, "Avarage Red: " + env.GetAvarageRed());
+        SetText(vegAvgGreen, "Avarage Green: " + env.GetAvarageGreen());
+        SetText(vegAvgBlue, "Avarage Blue: " + env.GetAvarageBlue());
+    }
+
+    private void SetText(GameObject obj, string text)
+    {
+        obj.GetComponent<TMPro.TextMeshProUGUI>().text = text;
     }
 
 

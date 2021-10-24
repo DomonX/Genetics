@@ -7,8 +7,10 @@ public class CameraMovement : MonoBehaviour
 {
     Transform tr;
     public float x;
-    public float y;
     public float z;
+
+    private float rotX = 0.0f;
+    private float rotY = 0.0f;
 
     void Start()
     {
@@ -19,11 +21,26 @@ public class CameraMovement : MonoBehaviour
     void Update()
     {
 
+        if (Input.GetKey(KeyCode.LeftAlt))
+        {
+            Cursor.lockState = CursorLockMode.None;
+            return;
+        } else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+
         x = Input.GetAxis("Horizontal");
-        y = Input.GetAxis("Mouse ScrollWheel") * -10.0f;
         z = Input.GetAxis("Vertical");
 
-        Vector3 move = new Vector3(x, y, z);
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = -Input.GetAxis("Mouse Y");
+
+        rotX += mouseX;
+        rotY += mouseY;
+
+        tr.localRotation = Quaternion.Euler(rotY, rotX, 0.0f);
+        Vector3 move = tr.forward * z + tr.right * x;
 
         tr.position += move;
     }

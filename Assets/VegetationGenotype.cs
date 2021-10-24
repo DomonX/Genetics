@@ -57,6 +57,6 @@ public class VegetationGenotype : MonoBehaviour
         {
             return Random.Range(-0.1f, 0.1f) + gene;
         }
-        return gene;
+        return Mathf.Clamp01(gene);
     }
 }
