@@ -36,9 +36,9 @@ public class VegetationGenotype : MonoBehaviour
     {
         GameObject child = GameObject.Instantiate(template);
         VegetationGenotype childGenotype = child.GetComponent<VegetationGenotype>();
-        childGenotype.xAllele = Mutate((xAllele + parent.xAllele) / 2, 0.001f);
-        childGenotype.yAllele = Mutate((yAllele + parent.yAllele) / 2, 0.001f);
-        childGenotype.zAllele = Mutate((zAllele + parent.zAllele) / 2, 0.001f);
+        childGenotype.xAllele = Mutate((xAllele + parent.xAllele) / 2);
+        childGenotype.yAllele = Mutate((yAllele + parent.yAllele) / 2);
+        childGenotype.zAllele = Mutate((zAllele + parent.zAllele) / 2);
         childGenotype.ResetColor();
         return child;
     }
@@ -51,12 +51,12 @@ public class VegetationGenotype : MonoBehaviour
         ResetColor();
     }
 
-    private float Mutate(float gene, float chance)
+    private float Mutate(float gene)
     {
-        if(Random.Range(0.0f, 1.0f) < Simc.MutationChance)
-        {
-            return Random.Range(-0.1f, 0.1f) + gene;
+        if(Random.Range(0.0f, 1.0f) < Simc.MutationChance) {
+            return Simc.MutationMode ? (Random.Range(0.0f, 1.0f) + gene) / 2 : Mathf.Clamp01(Random.Range(-0.1f, 0.1f) + gene);
         }
-        return Mathf.Clamp01(gene);
+
+        return gene;
     }
 }

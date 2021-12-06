@@ -2,6 +2,8 @@
 using System.Linq;
 using UnityEngine;
 
+using Sim;
+
 public class EnvironmentController : MonoBehaviour
 {
     Renderer r;
@@ -57,6 +59,11 @@ public class EnvironmentController : MonoBehaviour
     public float GetAvarageBlue()
     {
         return vegetation.Select(i => i.GetComponent<VegetationGenotype>().zAllele).Aggregate(0.0f, (float acc, float curr) => acc + curr) / vegetation.Count;
+    }
+
+    public float GetVolume()
+    {
+        return (float)vegetation.Count() / Simc.VegetationsPerEnvironment;
     }
 
     private void SetColor()

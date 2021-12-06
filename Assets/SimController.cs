@@ -13,6 +13,8 @@ public class SimController : MonoBehaviour
     public GameObject EnvironmentObject;
     public GameObject VegetationObject;
 
+    public bool mutationMode;
+
     private List<GameObject> EnvironmentObjects = new List<GameObject>();
     private List<GameObject> VegetationObjects = new List<GameObject>();
 
@@ -44,22 +46,28 @@ public class SimController : MonoBehaviour
         }
     }
 
-    private void AddToReport()
+  private void AddToReport()
     {
         string report = Controllers.Select(i =>
         {
             return
-                i.currentColor.r.ToString() + ',' +
-                i.currentColor.g.ToString() + ',' +
-                i.currentColor.b.ToString() + ',' +
-                i.GetAvarageCompatibility().ToString() + ',' +
-                i.GetAvarageRed().ToString() + ',' +
-                i.GetAvarageGreen().ToString() + ',' +
-                i.GetAvarageBlue().ToString() + ';';
-        }).Aggregate("", (string acc, string curr) => acc + curr);
+                i.currentColor.r.ToString() + '.' +
+                i.currentColor.g.ToString() + '.' +
+                i.currentColor.b.ToString() + '.' +
+                i.GetAvarageCompatibility().ToString() + '.' +
+                i.GetAvarageRed().ToString() + '.' +
+                i.GetAvarageGreen().ToString() + '.' +
+                i.GetAvarageBlue().ToString() + '.' +
+                i.GetVolume().ToString() + ';';
+        }).Aggregate("", (string acc, string curr) => acc + curr) + 
+            Simc.CompatibilityPower.ToString() + ';' + 
+            Simc.MutationChance.ToString() + ';' + 
+            Simc.VegetationsPerEnvironment.ToString() + ';' + 
+            Simc.MutationMode.ToString() + ';';
 
         reports.Add(report);
     }
+
 
     public void SaveReport()
     {
@@ -134,5 +142,17 @@ public class SimController : MonoBehaviour
     {
         Simc.Vegetations = (int)number;
     }
+
+    
+    public void SetVegetationsPerEnvironment(float size)
+    {
+        Simc.VegetationsPerEnvironment = (int)size;
+    }
+
+    public void SetMutationMode(bool mode)
+    {
+        Simc.MutationMode = mode;
+    }
+
 
 }
