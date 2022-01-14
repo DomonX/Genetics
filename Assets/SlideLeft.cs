@@ -5,17 +5,14 @@ using UnityEngine;
 
 public class SlideLeft : MonoBehaviour
 {
-
-    private RectTransform rect;
-
     public float DesiredX;
     public float BaseX;
-
-    public Vector2 Move;
     public float AnimationSpeed = 1.0f;
 
-    public bool State = false;
-    public bool IsAnimating = false;
+    private Vector2 Move;
+    private bool State = false;
+    private bool IsAnimating = false;
+    private RectTransform rect;
 
     public void Start()
     {
@@ -31,7 +28,6 @@ public class SlideLeft : MonoBehaviour
             return;
         }
         rect.anchoredPosition += Move * AnimationSpeed * Time.deltaTime * (State ? 1.0f : -1.0f);
-
         if(IsAnimationFinished())
         {
             Anchor();

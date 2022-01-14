@@ -19,6 +19,10 @@ public class InformationPanel : MonoBehaviour
     public GameObject vegAvgGreen;
     public GameObject vegAvgBlue;
 
+    public float debounceTime = 0.3f;
+
+    private float currentDebounceTime = 0.0f;
+
     void Start() {}
 
     void Update()
@@ -27,16 +31,26 @@ public class InformationPanel : MonoBehaviour
         {
             ClickedMouse();
         }
-    }
-
-    public void SetVegetation(VegetationController veg)
-    {
-        this.veg = veg;
+        if(!env)
+        {
+            return;
+        }
+        currentDebounceTime += Time.deltaTime;
+        if(currentDebounceTime >= debounceTime)
+        {
+            currentDebounceTime -= debounceTime;
+            SetupTexts();
+        }
     }
 
     public void SetEnvironment(EnvironmentController env)
     {
         this.env = env;
+        currentDebounceTime = debounceTime;
+    }
+
+    private void SetupTexts()
+    {
         SetText(envRed, "Red: " + env.currentColor.r);
         SetText(envGreen, "Green: " + env.currentColor.g);
         SetText(envBlue, "Blue: " + env.currentColor.b);
@@ -54,28 +68,14 @@ public class InformationPanel : MonoBehaviour
 
     private void ClickedMouse()
     {
-        VegetationController veg = GetClickedVegetation();
         EnvironmentController env = GetClickedEnvironment();
         if (env)
         {
             SetEnvironment(env);
-        }
-        if (veg)
+        } else
         {
-            SetVegetation(veg);
+            SetEnvironment(null);
         }
-    }
-
-    private VegetationController GetClickedVegetation()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        Physics.Raycast(ray, out hit, 75.0f, 1 << 9);
-        if (!hit.collider)
-        {
-            return null;
-        }
-        return hit.collider.gameObject.GetComponent<VegetationController>();
     }
 
     private EnvironmentController GetClickedEnvironment()

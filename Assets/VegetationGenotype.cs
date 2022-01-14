@@ -20,15 +20,10 @@ public class VegetationGenotype : MonoBehaviour
         ResetColor();
     }
 
-    void Update()
-    {
-        
-    }
-
     public void ResetColor()
     {
         Renderer r = GetComponent<Renderer>();
-        this.color = new Color(xAllele, yAllele, zAllele);
+        color = new Color(xAllele, yAllele, zAllele);
         r.material.SetColor("_Color", this.color);
     }
 
@@ -53,10 +48,9 @@ public class VegetationGenotype : MonoBehaviour
 
     private float Mutate(float gene)
     {
-        if(Random.Range(0.0f, 1.0f) < Simc.MutationChance) {
-            return Simc.MutationMode ? (Random.Range(0.0f, 1.0f) + gene) / 2 : Mathf.Clamp01(Random.Range(-0.1f, 0.1f) + gene);
+        if(Random.Range(0.0f, 1.0f) >= Simc.MutationChance) {
+            return gene;
         }
-
-        return gene;
+        return Simc.MutationMode == 1 ? (Random.Range(0.0f, 1.0f) + gene) / 2 : Mathf.Clamp01(Random.Range(-0.1f, 0.1f) + gene);
     }
 }

@@ -8,37 +8,38 @@ using System;
 public class VegetationController : MonoBehaviour
 {
     public float CurrentSize { get; private set; } = 0.0f;
-    public Color EnvironmentColor;
+    public Color EnvironmentColor {
+        get { return Environment.currentColor; }
+        set { }
+    }
     public VegetationGenotype Genotype;
-    public float Compatibiliy;
+    public float Compatibility;
     public float MaxSize = 1.0f;
     public float FoodStorage = 0.0f;
     public float Lifespan = 0.0f;
     public float MaxLifespan = 4.0f;
-    public float Strength = 0.0f;
+    public float Strength { 
+        get { return (MaxLifespan / (MaxLifespan + Lifespan)) * 3; } 
+        set { } 
+    }
     public bool IsGrown = false;
-
     private EnvironmentController Environment;
+
     void Start()
     {
-        IsGrown = false;
-        FoodStorage = 0.0f;
-        CurrentSize = 0.1f;
-        Lifespan = 0.0f;
-        RaycastHit hit;
-        Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, 10.0f, 1 << 8);
-        if(!hit.collider)
+        if(!ConnectToEnvironment())
         {
-            Destroy(this.gameObject);
             return;
         }
-        Environment = hit.collider.gameObject.GetComponent<EnvironmentController>();
-        Environment.RegisterVegetation(gameObject);
-        EnvironmentColor = Environment.currentColor;       
+        SetBaseValues();
         SetSize();
-        GetColorCompatibility();
-        gameObject.name = "Vegetation " + Simc.VegetationIndex;
-        Simc.VegetationIndex++;
+        if(Simc.FitnessFunctionMode == 1)
+        {
+            GetAlternativeCompatibility();
+        } else {
+            GetColorCompatibility();
+        }
+        gameObject.name = "Vegetation " + Simc.GetNewIndex();
     }
 
     void Update()
@@ -62,7 +63,31 @@ public class VegetationController : MonoBehaviour
         {
             CreateChild();
         }
+    }
 
+    private void SetBaseValues()
+    {
+        IsGrown = false;
+        FoodStorage = 0.0f;
+        CurrentSize = 0.1f;
+        Lifespan = 0.0f;
+    }
+
+    private bool ConnectToEnvironment()
+    {
+        Vector3 shiftVector = new Vector3(0.0f, 1.0f, 0.0f);
+        transform.localPosition = transform.localPosition + shiftVector;
+        RaycastHit hit;
+        Physics.Raycast(transform.localPosition, transform.TransformDirection(Vector3.down), out hit, 10.0f, 1 << 8);
+        if (!hit.collider)
+        {
+            Destroy(gameObject);
+            return false;
+        }
+        Environment = hit.collider.gameObject.GetComponent<EnvironmentController>();
+        Environment.RegisterVegetation(gameObject);
+        transform.localPosition = transform.localPosition - shiftVector;
+        return true;
     }
 
     private void Store(float amount)
@@ -93,11 +118,7 @@ public class VegetationController : MonoBehaviour
 
     private void CreateChild()
     {        
-        Collider[] c = Physics.OverlapSphere(this.transform.position, 5.0f, 1 << 9);
-        if(c.Length == 0)
-        {
-            Debug.Log("No partner");
-        }
+        Collider[] c = Physics.OverlapSphere(transform.position, Simc.PartnerRange, 1 << 9);
         VegetationGenotype genes = c.Length == 0 ? Genotype : c[new System.Random().Next(c.Length - 1)].GetComponent<VegetationGenotype>();
         Vector3 shift = new Vector3(UnityEngine.Random.Range(-2.0f, 2.0f), 0.0f, UnityEngine.Random.Range(-2.0f, 2.0f));
         GameObject child = Genotype.CreateChild(genes);
@@ -125,24 +146,25 @@ public class VegetationController : MonoBehaviour
     private float GetCurrentFood()
     {
         float food = Environment.CurrentFood();
-        // float compatibility = Mathf.Pow(Compatibiliy, Simc.CompatibilityPower);
-        float compatibility = 1.0f - (float)Math.Pow((1 - Compatibiliy), 1 / Simc.CompatibilityPower);
-        float strength = GetStrength();
-        return (food * compatibility * strength - 1.0f) * Simc.DeltaTime;
-    }
-
-    private float GetStrength()
-    {
-        Strength = (MaxLifespan / (MaxLifespan + Lifespan)) * 3;
-        return Strength;
+        float compatibility = (float)Math.Pow(Compatibility, Simc.CompatibilityPower);
+        return (food * compatibility * Strength - 1.0f) * Simc.DeltaTime;
     }
 
     private void GetColorCompatibility()
     {
-        float rDiff = 1.0f - (float)Math.Abs(Genotype.color.r - Environment.currentColor.r);
-        float gDiff = 1.0f - (float)Math.Abs(Genotype.color.g - Environment.currentColor.g);
-        float bDiff = 1.0f - (float)Math.Abs(Genotype.color.b - Environment.currentColor.b);
+        float rDiff = 1.0f - (float)Math.Abs(Genotype.color.r - EnvironmentColor.r);
+        float gDiff = 1.0f - (float)Math.Abs(Genotype.color.g - EnvironmentColor.g);
+        float bDiff = 1.0f - (float)Math.Abs(Genotype.color.b - EnvironmentColor.b);
 
-        Compatibiliy = rDiff * gDiff * bDiff;
+        Compatibility = rDiff * gDiff * bDiff;
+    }
+
+    private void GetAlternativeCompatibility()
+    {
+        double rDiff = Math.Pow(Math.Abs(Genotype.color.r - EnvironmentColor.r), 2.0);
+        double gDiff = Math.Pow(Math.Abs(Genotype.color.g - EnvironmentColor.g), 2.0);
+        double bDiff = Math.Pow(Math.Abs(Genotype.color.b - EnvironmentColor.b), 2.0);
+
+        Compatibility = 1.0f - (float)Math.Sqrt((rDiff + gDiff + bDiff) / 3);
     }
 }

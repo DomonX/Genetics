@@ -1,11 +1,9 @@
-﻿using System.Collections;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using Sim;
 
 using System.IO;
-using System.Threading.Tasks;
 
 public class SimController : MonoBehaviour
 {
@@ -13,14 +11,14 @@ public class SimController : MonoBehaviour
     public GameObject EnvironmentObject;
     public GameObject VegetationObject;
 
-    public bool mutationMode;
+    public float saveToReportDebounceTime = 1.0f;
 
     private List<GameObject> EnvironmentObjects = new List<GameObject>();
     private List<GameObject> VegetationObjects = new List<GameObject>();
 
     private List<EnvironmentController> Controllers = new List<EnvironmentController>();
 
-    private float worldSize;
+    private Vector2 worldSize;
 
     private bool started;
 
@@ -33,16 +31,16 @@ public class SimController : MonoBehaviour
         if(started)
         {
             reportTime += Simc.DeltaTime;
-            if(reportTime > 1.0f)
+            if(reportTime > saveToReportDebounceTime)
             {
                 AddToReport();
-                reportTime -= 1.0f;
+                reportTime -= saveToReportDebounceTime;
             }
             return;
         }
         if(EnvironmentObjects.Count > 0 && VegetationObjects.Count > 0)
         {
-            this.started = true;
+            started = true;
         }
     }
 
@@ -63,8 +61,7 @@ public class SimController : MonoBehaviour
             Simc.CompatibilityPower.ToString() + ';' + 
             Simc.MutationChance.ToString() + ';' + 
             Simc.VegetationsPerEnvironment.ToString() + ';' + 
-            Simc.MutationMode.ToString() + ';';
-
+            Simc.MutationMode.ToString() + ';'; 
         reports.Add(report);
     }
 
@@ -76,14 +73,13 @@ public class SimController : MonoBehaviour
 
     public void GenerateEnvironment()
     {
+        started = false;
         EnvironmentObjects.ForEach(i => {
             Destroy(i);
         });
-
         VegetationObjects.ForEach(i => {
             Destroy(i);
         });
-
         float xEnvScale = EnvironmentObject.transform.localScale.x * 10.0f;
         float zEnvScale = EnvironmentObject.transform.localScale.z * 10.0f;
         for (int x = 0; x < Simc.EnvironmentSize; x++)
@@ -92,24 +88,21 @@ public class SimController : MonoBehaviour
             {
                 GameObject clone = GameObject.Instantiate(EnvironmentObject);
                 clone.transform.position = new Vector3(x * xEnvScale, 0.0f, z * zEnvScale);
+                clone.name = "Environment" + x.ToString() + "/" + z.ToString();
                 EnvironmentObjects.Add(clone);
             }
         }
-
         Controllers = EnvironmentObjects.Select(i => i.GetComponent<EnvironmentController>()).ToList();
-
-        worldSize = (Simc.EnvironmentSize - 0.5f) * xEnvScale;
-
-        Simc.worldX = new Vector2(0.0f, EnvironmentObject.transform.localScale.x * 10.0f * Simc.EnvironmentSize) - new Vector2(EnvironmentObject.transform.localScale.x / 2, EnvironmentObject.transform.localScale.x / 2);
-        Simc.worldY = new Vector2(0.0f, EnvironmentObject.transform.localScale.y * 10.0f * Simc.EnvironmentSize) - new Vector2(EnvironmentObject.transform.localScale.x / 2, EnvironmentObject.transform.localScale.x / 2);
+        float shift = xEnvScale * -0.5f;
+        worldSize = new Vector2(shift, Simc.EnvironmentSize * xEnvScale + shift);
     }
 
     public void GenerateVegetation()
     {
         for(int i = 0; i < Simc.Vegetations; i++)
         {
-            float xPos = Random.Range(0.0f, worldSize);
-            float zPos = Random.Range(0.0f, worldSize);
+            float xPos = Random.Range(worldSize.x, worldSize.y);
+            float zPos = Random.Range(worldSize.x, worldSize.y);
             GameObject clone = GameObject.Instantiate(VegetationObject, new Vector3(xPos, 0.0f, zPos), new Quaternion());
             VegetationGenotype gene = clone.GetComponent<VegetationGenotype>();
             gene.Randomize();
@@ -149,10 +142,19 @@ public class SimController : MonoBehaviour
         Simc.VegetationsPerEnvironment = (int)size;
     }
 
-    public void SetMutationMode(bool mode)
+    public void SetMutationMode(int mode)
     {
         Simc.MutationMode = mode;
     }
 
+    public void SetFitnessFunctionMode(int mode)
+    {
+        Simc.FitnessFunctionMode = mode;
+    }
+
+    public void SetPartnerRange(float value)
+    {
+        Simc.PartnerRange = value;
+    }
 
 }
